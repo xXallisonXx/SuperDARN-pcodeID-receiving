@@ -1,0 +1,759 @@
+options:
+  parameters:
+    author: allison
+    catch_exceptions: 'True'
+    category: '[GRC Hier Blocks]'
+    cmake_opt: ''
+    comment: ''
+    copyright: ''
+    description: ''
+    gen_cmake: 'On'
+    gen_linking: dynamic
+    generate_options: qt_gui
+    hier_block_src_path: '.:'
+    id: PcodeID_Demodulator
+    max_nouts: '0'
+    output_language: python
+    placement: (0,0)
+    qt_qss_theme: ''
+    realtime_scheduling: ''
+    run: 'True'
+    run_command: '{python} -u {filename}'
+    run_options: prompt
+    sizing_mode: fixed
+    thread_safe_setters: ''
+    title: PcodeID Demodulator
+    window_size: (1000,1000)
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [8, 8]
+    rotation: 0
+    state: enabled
+
+blocks:
+- name: bw
+  id: variable
+  parameters:
+    comment: ''
+    value: 2 / txpl
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [520, 8.0]
+    rotation: 0
+    state: enabled
+- name: decimation
+  id: variable
+  parameters:
+    comment: ''
+    value: '4'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [576, 8.0]
+    rotation: 0
+    state: enabled
+- name: pulselen
+  id: variable
+  parameters:
+    comment: ''
+    value: 500e-6
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [152, 72.0]
+    rotation: 0
+    state: enabled
+- name: rf_gain
+  id: variable_qtgui_range
+  parameters:
+    comment: ''
+    gui_hint: ''
+    label: RF gain
+    min_len: '200'
+    orient: QtCore.Qt.Horizontal
+    rangeType: float
+    start: '0'
+    step: '1'
+    stop: '76'
+    value: '1'
+    widget: counter_slider
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [352, 8.0]
+    rotation: 0
+    state: enabled
+- name: samp_rate
+  id: variable
+  parameters:
+    comment: ''
+    value: 2.048e6
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [152, 8.0]
+    rotation: 0
+    state: enabled
+- name: tuning
+  id: variable_qtgui_range
+  parameters:
+    comment: ''
+    gui_hint: ''
+    label: frequency
+    min_len: '200'
+    orient: QtCore.Qt.Horizontal
+    rangeType: float
+    start: 1e6
+    step: 20e3
+    stop: 30e6
+    value: 10.5e6
+    widget: counter_slider
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [232, 8.0]
+    rotation: 0
+    state: enabled
+- name: txpl
+  id: variable
+  parameters:
+    comment: ''
+    value: 500e-6
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [448, 8.0]
+    rotation: 0
+    state: enabled
+- name: blocks_complex_to_float_0
+  id: blocks_complex_to_float
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [592, 136.0]
+    rotation: 0
+    state: disabled
+- name: blocks_file_sink_0
+  id: blocks_file_sink
+  parameters:
+    affinity: ''
+    alias: ''
+    append: 'False'
+    comment: ''
+    file: /home/user/Documents/gnuradio/hamsci/iqdata.bin
+    type: complex
+    unbuffered: 'False'
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [528, 496.0]
+    rotation: 0
+    state: enabled
+- name: blocks_null_sink_0
+  id: blocks_null_sink
+  parameters:
+    affinity: ''
+    alias: ''
+    bus_structure_sink: '[[0,],]'
+    comment: ''
+    num_inputs: '1'
+    type: float
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [800, 296.0]
+    rotation: 0
+    state: disabled
+- name: epy_block_1
+  id: epy_block
+  parameters:
+    _source_code: "\"\"\"\nEmbedded Python Blocks:\n\nEach time this file is saved,\
+      \ GRC will instantiate the first class it finds\nto get ports and parameters\
+      \ of your block. The arguments to __init__  will\nbe the parameters. All of\
+      \ them are required to have default values!\n\"\"\"\n\nimport numpy as np\n\
+      from gnuradio import gr\n\n\nclass blk(gr.sync_block):  # other base classes\
+      \ are basic_block, decim_block, interp_block\n    \"\"\"Phase-Coded Pulse Decoder\
+      \ with Correlation Matching\"\"\"\n\n    def __init__(self, threshold=0.001,\
+      \ pulselen=500e-6, bits=5, samp_rate=5e6):\n        \"\"\"arguments to this\
+      \ function show up as parameters in GRC\"\"\"\n        gr.sync_block.__init__(\n\
+      \            self,\n            name='Correlation Based Phase Code Decoder',\n\
+      \            in_sig=[np.float32],  # bipolar baseband input\n            out_sig=[np.float32]\n\
+      \        )\n        \n        # Parameters\n        self.threshold = threshold\n\
+      \        self.pulselen = pulselen\n        self.bits = bits\n        self.samp_rate\
+      \ = samp_rate\n        \n        # Timing calculations\n        self.spp = int(self.samp_rate\
+      \ * self.pulselen)  # samples per pulse\n        self.spb = self.spp // self.bits\
+      \  # samples per bit\n        self.dip_below_threshold = int(100e-6 * self.samp_rate)\n\
+      \        \n        # State machine\n        self.in_pulse = False\n        self.pulse_num\
+      \ = 0\n        self.last_decoded_bit = -1\n        self.samps_below_threshold\
+      \ = 0\n        \n        # Ring buffer for delayed output\n        self.output_buffer\
+      \ = np.zeros(self.spb, dtype=np.float32)\n        \n        # Pulse collection\
+      \ for correlation\n        self.current_pulse_bits = []  # Store decoded bits\
+      \ for current pulse\n        \n        # Reference sequences (data bits only,\
+      \ no pilot)\n        # All 16 possible 4-bit sequences for testing\n       \
+      \ self.reference_sequences = {\n            'SEQ_0000': np.array([0, 0, 0, 0]),\n\
+      \            'SEQ_0001': np.array([0, 0, 0, 1]),\n            'SEQ_0010': np.array([0,\
+      \ 0, 1, 0]),\n            'SEQ_0011': np.array([0, 0, 1, 1]),\n            'SEQ_0100':\
+      \ np.array([0, 1, 0, 0]),\n            'SEQ_0101': np.array([0, 1, 0, 1]),\n\
+      \            'SEQ_0110': np.array([0, 1, 1, 0]),\n            'SEQ_0111': np.array([0,\
+      \ 1, 1, 1]),  # ICE\n            'SEQ_1000': np.array([1, 0, 0, 0]),\n     \
+      \       'SEQ_1001': np.array([1, 0, 0, 1]),\n            'SEQ_1010': np.array([1,\
+      \ 0, 1, 0]),\n            'SEQ_1011': np.array([1, 0, 1, 1]),\n            'SEQ_1100':\
+      \ np.array([1, 1, 0, 0]),  # ICW\n            'SEQ_1101': np.array([1, 1, 0,\
+      \ 1]),  # BKS\n            'SEQ_1110': np.array([1, 1, 1, 0]),\n           \
+      \ 'SEQ_1111': np.array([1, 1, 1, 1])\n        }\n        \n        # Correlation\
+      \ threshold (0.0 to 1.0, tune based on SNR)\n        self.correlation_threshold\
+      \ = 0.7\n        \n        # Statistics\n        self.matched_pulses = {key:\
+      \ 0 for key in self.reference_sequences.keys()}\n        self.unmatched_pulses\
+      \ = 0\n\n    def correlate_pulse(self, pulse_bits):\n        \"\"\"\n      \
+      \  Correlate decoded pulse bits against known sequences.\n        Returns (best_match_name,\
+      \ correlation_score) or (None, 0) if below threshold.\n        \"\"\"\n    \
+      \    if len(pulse_bits) != self.bits - 1:  # Should have bits-1 data bits\n\
+      \            return None, 0.0\n        \n        pulse_array = np.array(pulse_bits)\n\
+      \        best_match = None\n        best_score = -1.0\n        \n        for\
+      \ seq_name, ref_seq in self.reference_sequences.items():\n            # Normalize\
+      \ correlation: divide by sequence length\n            correlation = np.sum(pulse_array\
+      \ == ref_seq) / len(ref_seq)\n            \n            if correlation > best_score:\n\
+      \                best_score = correlation\n                best_match = seq_name\n\
+      \        \n        # Check threshold\n        if best_score >= self.correlation_threshold:\n\
+      \            return best_match, best_score\n        else:\n            return\
+      \ None, best_score\n\n    def work(self, input_items, output_items):\n     \
+      \   \"\"\"Decode phase-coded pulses with correlation matching\"\"\"\n      \
+      \  bipolar_in = input_items[0]\n        out = output_items[0]\n        out[:]\
+      \ = 0  # Default: no pulse\n        \n        for i in range(len(bipolar_in)):\n\
+      \            mag = abs(bipolar_in[i])\n            \n            # Pulse detection\
+      \ with hysteresis\n            if not self.in_pulse:\n                if mag\
+      \ > self.threshold:\n                    self.in_pulse = True\n            \
+      \        self.pulse_num += 1\n                    self.pulse_start_idx = i\n\
+      \                    self.last_decoded_bit = -1\n                    self.output_buffer[:]\
+      \ = 0\n                    self.current_pulse_bits = []  # Reset pulse collection\n\
+      \                    print(f\"\\n[PULSE START] Pulse #{self.pulse_num} detected\"\
+      )\n            else:\n                # Check for pulse end\n              \
+      \  samples_in_pulse = i - self.pulse_start_idx\n                \n         \
+      \       if mag < self.threshold:\n                    self.samps_below_threshold\
+      \ += 1\n                    # Pulse ends after sustained low signal (hysteresis\
+      \ only)\n                    if self.samps_below_threshold >= self.dip_below_threshold:\n\
+      \                        # Pulse ended - perform correlation\n             \
+      \           duration_us = (samples_in_pulse / self.samp_rate) * 1e6\n      \
+      \                  match_name, match_score = self.correlate_pulse(self.current_pulse_bits)\n\
+      \                        \n                        if match_name:\n        \
+      \                    self.matched_pulses[match_name] += 1\n                \
+      \            print(f\"[PULSE END - MATCHED] {match_name} (score: {match_score:.2f})\
+      \ | \"\n                                  f\"{len(self.current_pulse_bits)}\
+      \ bits | {duration_us:.1f}\xB5s\")\n                        else:\n        \
+      \                    self.unmatched_pulses += 1\n                          \
+      \  print(f\"[PULSE END - UNMATCHED] Best score: {match_score:.2f} | \"\n   \
+      \                               f\"{len(self.current_pulse_bits)} bits | {duration_us:.1f}\xB5\
+      s | \"\n                                  f\"bits={self.current_pulse_bits}\"\
+      )\n                        \n                        # Print statistics\n  \
+      \                      print(f\"Stats: {self.matched_pulses} | Unmatched: {self.unmatched_pulses}\"\
+      )\n                        \n                        self.in_pulse = False\n\
+      \                        self.samps_below_threshold = 0\n                  \
+      \      continue\n                else:\n                    self.samps_below_threshold\
+      \ = 0\n                \n                # Decode bits during pulse\n      \
+      \          bit_index = samples_in_pulse // self.spb\n                \n    \
+      \            if bit_index < self.bits and bit_index > self.last_decoded_bit:\n\
+      \                    # Calculate stable region for this bit\n              \
+      \      bit_start = bit_index * self.spb\n                    stable_start =\
+      \ bit_start + int(0.2 * self.spb)\n                    \n                  \
+      \  # For last bit, extend stable region to 95% to catch it before pulse ends\n\
+      \                    if bit_index == self.bits - 1:\n                      \
+      \  stable_end = bit_start + int(0.95 * self.spb)\n                    else:\n\
+      \                        stable_end = bit_start + int(0.8 * self.spb)\n    \
+      \                \n                    if stable_start <= samples_in_pulse <\
+      \ stable_end:\n                        # Average bipolar signal in stable region\n\
+      \                        local_start = max(0, i - 10)\n                    \
+      \    avg_sign = np.sign(np.mean(bipolar_in[local_start:i+1]))\n            \
+      \            \n                        if bit_index == 0:\n                \
+      \            # Pilot bit - store reference\n                            self.pilot_sign\
+      \ = avg_sign\n                            bit_value = 1.0  # Pilot always outputs\
+      \ 1\n                            print(f\"Bit 0 (pilot): {bit_value}\")\n  \
+      \                      else:\n                            # Data bit - compare\
+      \ to pilot (non-differential)\n                            if avg_sign == self.pilot_sign:\n\
+      \                                bit_value = 1.0  # Same phase as pilot\n  \
+      \                              decoded_bit = 1\n                           \
+      \ else:\n                                bit_value = -1.0  # Opposite phase\
+      \ from pilot\n                                decoded_bit = 0\n            \
+      \                \n                            self.current_pulse_bits.append(decoded_bit)\n\
+      \                            print(f\"Bit {bit_index} (data): {bit_value} ->\
+      \ {decoded_bit}\")\n                        \n                        self.output_buffer[:]\
+      \ = bit_value\n                        self.last_decoded_bit = bit_index\n \
+      \               \n                # Output from ring buffer\n              \
+      \  out[i] = self.output_buffer[samples_in_pulse % self.spb]\n        \n    \
+      \    return len(input_items[0])\n"
+    affinity: ''
+    alias: ''
+    bits: '5'
+    comment: ''
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    pulselen: pulselen
+    samp_rate: samp_rate / decimation
+    threshold: '0.003'
+  states:
+    _io_cache: ('Correlation Based Phase Code Decoder', 'blk', [('threshold', '0.001'),
+      ('pulselen', '0.0005'), ('bits', '5'), ('samp_rate', '5000000.0')], [('0', 'float',
+      1)], [('0', 'float', 1)], 'Phase-Coded Pulse Decoder with Correlation Matching',
+      ['bits', 'pulselen', 'samp_rate', 'threshold'])
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [800, 64.0]
+    rotation: 0
+    state: disabled
+- name: low_pass_filter_0
+  id: low_pass_filter
+  parameters:
+    affinity: ''
+    alias: ''
+    beta: '6.76'
+    comment: ''
+    cutoff_freq: 3*bw
+    decim: decimation
+    gain: '1'
+    interp: '1'
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    samp_rate: samp_rate
+    type: fir_filter_ccf
+    width: 2e3
+    win: window.WIN_HAMMING
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [320, 360.0]
+    rotation: 0
+    state: enabled
+- name: qtgui_freq_sink_x_0
+  id: qtgui_freq_sink_x
+  parameters:
+    affinity: ''
+    alias: ''
+    alpha1: '1.0'
+    alpha10: '1.0'
+    alpha2: '1.0'
+    alpha3: '1.0'
+    alpha4: '1.0'
+    alpha5: '1.0'
+    alpha6: '1.0'
+    alpha7: '1.0'
+    alpha8: '1.0'
+    alpha9: '1.0'
+    autoscale: 'False'
+    average: '1.0'
+    axislabels: 'True'
+    bw: 10*samp_rate / decimation
+    color1: '"blue"'
+    color10: '"dark blue"'
+    color2: '"red"'
+    color3: '"green"'
+    color4: '"black"'
+    color5: '"cyan"'
+    color6: '"magenta"'
+    color7: '"yellow"'
+    color8: '"dark red"'
+    color9: '"dark green"'
+    comment: ''
+    ctrlpanel: 'False'
+    fc: tuning
+    fftsize: '1024'
+    freqhalf: 'True'
+    grid: 'False'
+    gui_hint: ''
+    label: Relative Gain
+    label1: ''
+    label10: ''''''
+    label2: ''''''
+    label3: ''''''
+    label4: ''''''
+    label5: ''''''
+    label6: ''''''
+    label7: ''''''
+    label8: ''''''
+    label9: ''''''
+    legend: 'True'
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    name: '""'
+    nconnections: '1'
+    norm_window: 'False'
+    showports: 'False'
+    tr_chan: '0'
+    tr_level: '0.0'
+    tr_mode: qtgui.TRIG_MODE_FREE
+    tr_tag: '""'
+    type: complex
+    units: dB
+    update_time: '0.10'
+    width1: '1'
+    width10: '1'
+    width2: '1'
+    width3: '1'
+    width4: '1'
+    width5: '1'
+    width6: '1'
+    width7: '1'
+    width8: '1'
+    width9: '1'
+    wintype: window.WIN_BLACKMAN_hARRIS
+    ymax: '10'
+    ymin: '-140'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [608, 344.0]
+    rotation: 0
+    state: disabled
+- name: qtgui_time_sink_x_0_0_0
+  id: qtgui_time_sink_x
+  parameters:
+    affinity: ''
+    alias: ''
+    alpha1: '1.0'
+    alpha10: '1.0'
+    alpha2: '1.0'
+    alpha3: '1.0'
+    alpha4: '1.0'
+    alpha5: '1.0'
+    alpha6: '1.0'
+    alpha7: '1.0'
+    alpha8: '1.0'
+    alpha9: '1.0'
+    autoscale: 'False'
+    axislabels: 'True'
+    color1: blue
+    color10: dark blue
+    color2: red
+    color3: green
+    color4: black
+    color5: cyan
+    color6: magenta
+    color7: yellow
+    color8: dark red
+    color9: dark green
+    comment: ''
+    ctrlpanel: 'False'
+    entags: 'True'
+    grid: 'False'
+    gui_hint: ''
+    label1: Signal 1
+    label10: Signal 10
+    label2: Signal 2
+    label3: Signal 3
+    label4: Signal 4
+    label5: Signal 5
+    label6: Signal 6
+    label7: Signal 7
+    label8: Signal 8
+    label9: Signal 9
+    legend: 'True'
+    marker1: '-1'
+    marker10: '-1'
+    marker2: '-1'
+    marker3: '-1'
+    marker4: '-1'
+    marker5: '-1'
+    marker6: '-1'
+    marker7: '-1'
+    marker8: '-1'
+    marker9: '-1'
+    name: '""'
+    nconnections: '1'
+    size: '5000'
+    srate: samp_rate
+    stemplot: 'False'
+    style1: '1'
+    style10: '1'
+    style2: '1'
+    style3: '1'
+    style4: '1'
+    style5: '1'
+    style6: '1'
+    style7: '1'
+    style8: '1'
+    style9: '1'
+    tr_chan: '0'
+    tr_delay: '0'
+    tr_level: '0.01'
+    tr_mode: qtgui.TRIG_MODE_AUTO
+    tr_slope: qtgui.TRIG_SLOPE_POS
+    tr_tag: '""'
+    type: float
+    update_time: '0.10'
+    width1: '1'
+    width10: '1'
+    width2: '1'
+    width3: '1'
+    width4: '1'
+    width5: '1'
+    width6: '1'
+    width7: '1'
+    width8: '1'
+    width9: '1'
+    ylabel: Amplitude
+    ymax: '0.02'
+    ymin: '-0.02'
+    yunit: '""'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [808, 200.0]
+    rotation: 0
+    state: disabled
+- name: qtgui_time_sink_x_0_0_0_2
+  id: qtgui_time_sink_x
+  parameters:
+    affinity: ''
+    alias: ''
+    alpha1: '1.0'
+    alpha10: '1.0'
+    alpha2: '1.0'
+    alpha3: '1.0'
+    alpha4: '1.0'
+    alpha5: '1.0'
+    alpha6: '1.0'
+    alpha7: '1.0'
+    alpha8: '1.0'
+    alpha9: '1.0'
+    autoscale: 'False'
+    axislabels: 'True'
+    color1: blue
+    color10: dark blue
+    color2: red
+    color3: green
+    color4: black
+    color5: cyan
+    color6: magenta
+    color7: yellow
+    color8: dark red
+    color9: dark green
+    comment: ''
+    ctrlpanel: 'False'
+    entags: 'True'
+    grid: 'False'
+    gui_hint: ''
+    label1: Signal 1
+    label10: Signal 10
+    label2: Signal 2
+    label3: Signal 3
+    label4: Signal 4
+    label5: Signal 5
+    label6: Signal 6
+    label7: Signal 7
+    label8: Signal 8
+    label9: Signal 9
+    legend: 'True'
+    marker1: '-1'
+    marker10: '-1'
+    marker2: '-1'
+    marker3: '-1'
+    marker4: '-1'
+    marker5: '-1'
+    marker6: '-1'
+    marker7: '-1'
+    marker8: '-1'
+    marker9: '-1'
+    name: '""'
+    nconnections: '1'
+    size: '5000'
+    srate: samp_rate / decimation
+    stemplot: 'False'
+    style1: '1'
+    style10: '1'
+    style2: '1'
+    style3: '1'
+    style4: '1'
+    style5: '1'
+    style6: '1'
+    style7: '1'
+    style8: '1'
+    style9: '1'
+    tr_chan: '0'
+    tr_delay: '0'
+    tr_level: '0.01'
+    tr_mode: qtgui.TRIG_MODE_AUTO
+    tr_slope: qtgui.TRIG_SLOPE_POS
+    tr_tag: '""'
+    type: complex
+    update_time: '0.10'
+    width1: '1'
+    width10: '1'
+    width2: '1'
+    width3: '1'
+    width4: '1'
+    width5: '1'
+    width6: '1'
+    width7: '1'
+    width8: '1'
+    width9: '1'
+    ylabel: Amplitude
+    ymax: '0.02'
+    ymin: '-0.02'
+    yunit: '""'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [608, 232.0]
+    rotation: 0
+    state: disabled
+- name: qtgui_time_sink_x_1
+  id: qtgui_time_sink_x
+  parameters:
+    affinity: ''
+    alias: ''
+    alpha1: '1.0'
+    alpha10: '1.0'
+    alpha2: '1.0'
+    alpha3: '1.0'
+    alpha4: '1.0'
+    alpha5: '1.0'
+    alpha6: '1.0'
+    alpha7: '1.0'
+    alpha8: '1.0'
+    alpha9: '1.0'
+    autoscale: 'False'
+    axislabels: 'True'
+    color1: blue
+    color10: dark blue
+    color2: red
+    color3: green
+    color4: black
+    color5: cyan
+    color6: magenta
+    color7: yellow
+    color8: dark red
+    color9: dark green
+    comment: ''
+    ctrlpanel: 'False'
+    entags: 'True'
+    grid: 'False'
+    gui_hint: ''
+    label1: Signal 1
+    label10: Signal 10
+    label2: Signal 2
+    label3: Signal 3
+    label4: Signal 4
+    label5: Signal 5
+    label6: Signal 6
+    label7: Signal 7
+    label8: Signal 8
+    label9: Signal 9
+    legend: 'True'
+    marker1: '-1'
+    marker10: '-1'
+    marker2: '-1'
+    marker3: '-1'
+    marker4: '-1'
+    marker5: '-1'
+    marker6: '-1'
+    marker7: '-1'
+    marker8: '-1'
+    marker9: '-1'
+    name: '""'
+    nconnections: '1'
+    size: '5000'
+    srate: samp_rate / decimation
+    stemplot: 'False'
+    style1: '1'
+    style10: '1'
+    style2: '1'
+    style3: '1'
+    style4: '1'
+    style5: '1'
+    style6: '1'
+    style7: '1'
+    style8: '1'
+    style9: '1'
+    tr_chan: '0'
+    tr_delay: '0'
+    tr_level: '0.001'
+    tr_mode: qtgui.TRIG_MODE_AUTO
+    tr_slope: qtgui.TRIG_SLOPE_POS
+    tr_tag: '""'
+    type: float
+    update_time: '0.10'
+    width1: '1'
+    width10: '1'
+    width2: '1'
+    width3: '1'
+    width4: '1'
+    width5: '1'
+    width6: '1'
+    width7: '1'
+    width8: '1'
+    width9: '1'
+    ylabel: Amplitude
+    ymax: '1'
+    ymin: '-1'
+    yunit: '""'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1088, 72.0]
+    rotation: 0
+    state: disabled
+- name: soapy_rtlsdr_source_0
+  id: soapy_rtlsdr_source
+  parameters:
+    affinity: ''
+    agc: 'False'
+    alias: ''
+    bias: 'False'
+    bufflen: '16384'
+    center_freq: 'tuning '
+    comment: ''
+    dev_args: ''
+    freq_correction: '0'
+    gain: '0'
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    samp_rate: samp_rate
+    type: fc32
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [88, 392.0]
+    rotation: 0
+    state: enabled
+
+connections:
+- [blocks_complex_to_float_0, '0', epy_block_1, '0']
+- [blocks_complex_to_float_0, '0', qtgui_time_sink_x_0_0_0, '0']
+- [blocks_complex_to_float_0, '1', blocks_null_sink_0, '0']
+- [epy_block_1, '0', qtgui_time_sink_x_1, '0']
+- [low_pass_filter_0, '0', blocks_complex_to_float_0, '0']
+- [low_pass_filter_0, '0', blocks_file_sink_0, '0']
+- [low_pass_filter_0, '0', qtgui_freq_sink_x_0, '0']
+- [low_pass_filter_0, '0', qtgui_time_sink_x_0_0_0_2, '0']
+- [soapy_rtlsdr_source_0, '0', low_pass_filter_0, '0']
+
+metadata:
+  file_format: 1
+  grc_version: 3.10.12.0
